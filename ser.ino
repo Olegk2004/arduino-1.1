@@ -1,4 +1,3 @@
-// подключение библиотеки
 #include <AccelStepper.h>
 // создаем экземпляр AccelStepper
 #define CLK 3
