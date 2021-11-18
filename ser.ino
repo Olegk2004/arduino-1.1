@@ -1,4 +1,6 @@
+// подключение библиотеки
 #include <AccelStepper.h>
+
 // создаем экземпляр AccelStepper
 #define CLK 3
 #define DIO 2
@@ -10,7 +12,12 @@ TM1637 disp(CLK, DIO);
 #define IN4 A1
 #define PIN_POT A5
 AccelStepper stepper(8, IN1, IN3, IN2, IN4);
-
+//1-0
+//2-27
+//3-39
+//4-51
+//5-63
+//6-75
 // клавиши выбора режима
 int pinBut2 = 10;
 int lbut2 = 1;
@@ -18,11 +25,13 @@ int cbut2 = 1;
 int pinBut = 11;
 int lbut = 1;
 int cbut = 1;
-int corpot = 1023;
+int pot_value = 1023;
 int nap = -1;
-int q = -1;
-boolean go=false;
-int num = 0;
+int side = 1;
+int number_of_position = 1;
+int correct_pot = 0;
+int lastpot = 139;
+int flag = 1;
 
 void setup(){
   Serial.begin(9600);
@@ -37,56 +46,56 @@ void setup(){
 
 void loop() {  
   cbut = deb(lbut, pinBut);
-  if (lbut == 0 && cbut == 1 && num > -4095){
-    num -= 585;
-    q = -1;
+  if (lbut == 0 && cbut == 1 && number_of_position != 1){
+    number_of_position -= 1;
+    side = 1;
+    flag = 1;
   }
   lbut = cbut;
   cbut2 = deb(lbut2, pinBut2);
-  if (lbut2 == 0 && cbut2 == 1 && num < 0){
-    num += 585;
-    q = 1;
+  if (lbut2 == 0 && cbut2 == 1 && number_of_position != 6){
+    number_of_position += 1;
+    side = -1;
+    flag = 1;
   }
   lbut2 = cbut2;
-  corpot = analogRead(PIN_POT);
-  if (nap == -1){
-    if(corpot >= 20){
-      stepper.setSpeed(500);
-      stepper.runSpeed();
-      corpot = analogRead(PIN_POT);
-    }else{
-      nap = 1;
-      stepper.setCurrentPosition(0);
-      delay(1000);
-    }
+  if (number_of_position == 1){
+    correct_pot = 1;
+  }if (number_of_position == 2){
+    correct_pot = 27;
+  }if (number_of_position == 3){
+    correct_pot = 39;
+  }if (number_of_position == 4){
+    correct_pot = 51;
+  }if (number_of_position == 5){
+    correct_pot = 63;
+  }if (number_of_position == 6){
+    correct_pot = 75;
+  }
+  Serial.println(pot_value);
+  pot_value = analogRead(PIN_POT);
+  if (abs(pot_value - correct_pot) > 1 && flag == 1){
+    stepper.setSpeed(500 * side);
+    stepper.runSpeed();
   }else{
-    if (stepper.currentPosition() != num){
-      stepper.setSpeed(500 * q);
-      stepper.runSpeed();
-    }else{
-      stepper.stop();
+    stepper.stop();
+    flag = 0;
     }
-  }
-  Serial.println(cbut);
-  if (stepper.currentPosition() != num){
-    disp.display("A", "A", "A", "A");
-  }else if (num / 585 == 0){
+  if (flag == 1){
+    disp.display("p", "p", "p", "p");
+  }else if (number_of_position == 1){
     disp.display(0, 1);
-  }else if (num / 585 == -1){
+  }else if (number_of_position == 2){
     disp.display(0, 2);
-  }else if (num / 585 == -2){
+  }else if (number_of_position == 3){
     disp.display(0, 3);
-  }else if (num / 585 == -3){
+  }else if (number_of_position == 4){
     disp.display(0, 4);
-  }else if (num / 585 == -4){
+  }else if (number_of_position == 5){
     disp.display(0, 5);
-  }else if (num / 585 == -5){
+  }else if (number_of_position == 6){
     disp.display(0, 6);
-  }else if (num / 585 == -6){
-    disp.display(0, 7);
-  }else if(num / 585 == -7){
-    disp.display(0, 8);
-  }
+}
 }
 
 // устранение дребезга
