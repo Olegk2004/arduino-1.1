@@ -30,8 +30,9 @@ int nap = -1;
 int side = 1;
 int number_of_position = 1;
 int correct_pot = 0;
-int lastpot = 139;
+int q = 0;
 int flag = 1;
+int num = 0;
 
 void setup(){
   Serial.begin(9600);
@@ -49,40 +50,56 @@ void loop() {
   if (lbut == 0 && cbut == 1 && number_of_position != 1){
     number_of_position -= 1;
     side = 1;
-    flag = 1;
   }
   lbut = cbut;
   cbut2 = deb(lbut2, pinBut2);
   if (lbut2 == 0 && cbut2 == 1 && number_of_position != 6){
     number_of_position += 1;
     side = -1;
-    flag = 1;
   }
   lbut2 = cbut2;
   if (number_of_position == 1){
-    correct_pot = 1;
+    num = 0;
   }if (number_of_position == 2){
-    correct_pot = 27;
+    num = -1006;
   }if (number_of_position == 3){
-    correct_pot = 39;
+    num = -1561;
   }if (number_of_position == 4){
-    correct_pot = 51;
+    num = -2116;
   }if (number_of_position == 5){
-    correct_pot = 63;
+    num = -2671;
   }if (number_of_position == 6){
-    correct_pot = 75;
+    num = -3226;
   }
-  Serial.println(pot_value);
+  Serial.println(stepper.currentPosition());
   pot_value = analogRead(PIN_POT);
-  if (abs(pot_value - correct_pot) > 1 && flag == 1){
-    stepper.setSpeed(500 * side);
-    stepper.runSpeed();
-  }else{
-    stepper.stop();
-    flag = 0;
-    }
   if (flag == 1){
-    disp.display("p", "p", "p", "p");
+    if (pot_value > 1){
+      stepper.setSpeed(500 * side);
+      stepper.runSpeed();
+      q = 1;
+   }else{
+     stepper.stop();
+     stepper.setCurrentPosition(0);
+     delay(1000);
+     flag = 0;
+     q = 0;
+  }
+  }else{
+    if (stepper.currentPosition() != num){
+      stepper.setSpeed(500 * side);
+      stepper.runSpeed();
+      q = 1;
+    }else{
+      stepper.stop();
+      q = 0;
+      }
+  }
+  if (q == 1){
+    disp.display(0, 15);
+    disp.display(1, 15);
+    disp.display(2, 15);
+    disp.display(3, 15);
   }else if (number_of_position == 1){
     disp.display(0, 1);
   }else if (number_of_position == 2){
