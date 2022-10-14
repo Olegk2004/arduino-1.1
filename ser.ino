@@ -4,8 +4,8 @@
 // создаем экземпляр AccelStepper
 #define CLK 3
 #define DIO 2
-#include "TM1637.h"
-TM1637 disp(CLK, DIO);
+#include "GyverTM1637.h"
+GyverTM1637 disp(CLK, DIO);
 #define IN1 A4
 #define IN2 A3
 #define IN3 A2
@@ -34,6 +34,7 @@ int q = 0;
 int flag = 1;
 int num = 0;
 
+
 void setup(){
   Serial.begin(9600);
   stepper.setMaxSpeed(1000);
@@ -50,35 +51,54 @@ void loop() {
   if (lbut == 0 && cbut == 1 && number_of_position != 1){
     number_of_position -= 1;
     side = 1;
+    if (number_of_position == 1){
+      num = 0;
+    }if (number_of_position == 2){
+      num = -1006;
+    }if (number_of_position == 3){
+      num = -1550;
+    }if (number_of_position == 4){
+      num = -2116;
+    }if (number_of_position == 5){
+      num = -2580;
+    }if (number_of_position == 6){
+      num = -3226;
+    }
   }
   lbut = cbut;
   cbut2 = deb(lbut2, pinBut2);
   if (lbut2 == 0 && cbut2 == 1 && number_of_position != 6){
     number_of_position += 1;
     side = -1;
+      if (number_of_position == 1){
+        num = 0;
+      }if (number_of_position == 2){
+        num = -1006;
+      }if (number_of_position == 3){
+        num = -1573;
+      }if (number_of_position == 4){
+        num = -2116;
+      }if (number_of_position == 5){
+        num = -2595;
+      }if (number_of_position == 6){
+        num = -3226;
+    }
   }
   lbut2 = cbut2;
-  if (number_of_position == 1){
-    num = 0;
-  }if (number_of_position == 2){
-    num = -1006;
-  }if (number_of_position == 3){
-    num = -1561;
-  }if (number_of_position == 4){
-    num = -2116;
-  }if (number_of_position == 5){
-    num = -2671;
-  }if (number_of_position == 6){
-    num = -3226;
-  }
   Serial.println(stepper.currentPosition());
   pot_value = analogRead(PIN_POT);
   if (flag == 1){
-    if (pot_value > 1){
+    if (pot_value > 297){
       stepper.setSpeed(500 * side);
       stepper.runSpeed();
       q = 1;
-   }else{
+    }
+    else if(pot_value < 297){
+      stepper.setSpeed(-500);
+      stepper.runSpeed();
+      q = 1;
+    }
+    else{
      stepper.stop();
      stepper.setCurrentPosition(0);
      delay(1000);
@@ -94,24 +114,39 @@ void loop() {
       stepper.stop();
       q = 0;
       }
+  } 
+  if(pot_value >= 296 && pot_value <= 298){
+    disp.displayByte(1, _1);
+  }
+  else if(pot_value >= 358 && pot_value <= 359 && side == -1){
+    disp.displayByte(1, _3);
+  }
+  else if(pot_value >= 355 && pot_value <= 356 && side == 1){
+    disp.displayByte(1, _3);
+  }
+  else if(pot_value >= 395 && pot_value <= 396 && side == -1){
+    disp.displayByte(1, _5);
+  }
+  else if(pot_value >= 392 && pot_value <= 393 && side == 1){
+    disp.displayByte(1, _5);
+  }
+  else{
+    disp.displayByte(1, _empty);
   }
   if (q == 1){
-    disp.display(0, 15);
-    disp.display(1, 15);
-    disp.display(2, 15);
-    disp.display(3, 15);
+    disp.displayByte(0, _empty);
   }else if (number_of_position == 1){
-    disp.display(0, 1);
+    disp.displayByte(0, _1);
   }else if (number_of_position == 2){
-    disp.display(0, 2);
+    disp.displayByte(0, _2);
   }else if (number_of_position == 3){
-    disp.display(0, 3);
+    disp.displayByte(0, _3);
   }else if (number_of_position == 4){
-    disp.display(0, 4);
+    disp.displayByte(0, _4);
   }else if (number_of_position == 5){
-    disp.display(0, 5);
+    disp.displayByte(0, _5);
   }else if (number_of_position == 6){
-    disp.display(0, 6);
+    disp.displayByte(0, _6);
 }
 }
 
